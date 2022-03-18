@@ -32,7 +32,6 @@ int main(int argc, char **argv) {
     
     for(int i = 0; i < num_consumers; i++)
         pthread_join(cons[i], NULL);
-    
 
     return 0;
 }
