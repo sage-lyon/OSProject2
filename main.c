@@ -3,15 +3,15 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+m monitor;
 
 int main(int argc, char **argv) {
-
+	
     assert(argc == 4);
 
     int buffer_size = atoi(argv[1]);
     int num_producers = atoi(argv[2]);
     int num_consumers = atoi(argv[3]);
-
     assert(buffer_size > 0);
 
     int buffer[buffer_size];
