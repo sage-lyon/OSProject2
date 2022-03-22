@@ -30,15 +30,16 @@ void* producer(void * thread_id){
 
         // If the buffer is full wait on the condition variable
 		while(m.buffer_data_stored >= buffer_size){
-			printf("P%d: Blocked due to full buffer\n", *(int *)thread_id);
-			pthread_cond_wait(&m.CVP, &m.prod_lock);
-			printf("P%d: Done waiting on full buffer\n", *(int *)thread_id);
+            printf("Prod Data stored: %d\n", m.buffer_data_stored);
+            printf("P%d: Blocked due to full buffer\n", *(int *)thread_id);
+            pthread_cond_wait(&m.CVP, &m.prod_lock);
+            printf("P%d: Done waiting on full buffer\n", *(int *)thread_id);
 		}
-		
+
 	    // Write random number 0-10 to buffer	
 		m.buffer[m.producer_location] = rand() % (11);
 		printf("P%d: Writing %d to position %d\n", *(int *)thread_id, m.buffer[m.producer_location], m.producer_location);
-		
+
         // Set new buffer position for producers
         m.producer_location = (m.producer_location + 1) % buffer_size;
 
@@ -52,11 +53,11 @@ void* producer(void * thread_id){
 
         // Signal to consumers that data has been written to buffer
 		pthread_cond_signal(&m.CVC);
-		
+
 	}
 	
 	printf("P%d: Exiting\n",*(int *)thread_id);
-	return NULL;
+	exit(0);
 }
 
 
@@ -78,13 +79,14 @@ void * consumer(void * thread_id){
 	
 	for(int i = 0; i < items; i++){
 		
-		printf("C%d: Consuming %d values\n", *(int *)thread_id, items);
+		printf("C%d: Consuming %d values\n", *(int *)thread_id, items - i);
 		
 	    // Lock critical section	
 		pthread_mutex_lock(&m.cons_lock);
 
         // If buffer is empty wait on the condition variable
 		while(m.buffer_data_stored == 0){
+            printf("Cons Data stored: %d\n", m.buffer_data_stored);
 			printf("C%d: Blocked due to full buffer\n",*(int *)thread_id);
 			pthread_cond_wait(&m.CVC, &m.cons_lock);
 			printf("C%d: Done waiting on empty buffer\n",*(int *)thread_id);
@@ -103,15 +105,15 @@ void * consumer(void * thread_id){
 
 
         // Unlock critical section
-		pthread_mutex_unlock(&m.prod_lock);
+		pthread_mutex_unlock(&m.cons_lock);
 
         // Signal to producers that data has been consumed
 		pthread_cond_signal(&m.CVP);
 		
 	}
 	
-	printf("P%d: Exiting\n",*(int *)thread_id);
+	printf("C%d: Exiting\n",*(int *)thread_id);
 	
-	return NULL;
+	exit(0);
 	
 }
