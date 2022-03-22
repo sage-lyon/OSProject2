@@ -34,20 +34,26 @@ int main(int argc, char **argv) {
     // Create producer and consumer threads
     for(int i = 0; i < num_producers; i++){
         prod_id[i] = i;
+        printf("Main: started producer %d\n", i);
         pthread_create(&prod[i], NULL, producer, &prod_id[i]);
     }
     
     for(int i = 0; i < num_consumers; i++){
         cons_id[i] = i;
+        printf("Main: started consumer %d\n", i);
         pthread_create(&cons[i], NULL, consumer, &cons_id[i]);
     }
 
     // Join producer and consumer threads
-    for(int i = 0; i < num_producers; i++)
+    for(int i = 0; i < num_producers; i++){
         pthread_join(prod[i], NULL);
+        printf("Main: producer %d joined\n", i);
+    }
     
-    for(int i = 0; i < num_consumers; i++)
+    for(int i = 0; i < num_consumers; i++){
         pthread_join(cons[i], NULL);
+        printf("Main: consumer %d joined\n", i);
+    }
 
     return 0;
 }
