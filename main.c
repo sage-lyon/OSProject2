@@ -55,5 +55,9 @@ int main(int argc, char **argv) {
         printf("Main: consumer %d joined\n", i);
     }
 
+    monitor_destroy(&m);
+    
+    printf("Main: program completed\n");
+
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "prod_cons_MT.h"
+#include <pthread.h>
 
 extern monitor m;
 extern int buffer_size, num_producers, num_consumers;
@@ -20,24 +21,32 @@ void monitor_init(monitor *m, int *buffer) {
 	
 }
 
+void monitor_destroy(monitor *m) {
+    // Destroy all pthread mutexes and condition variables in monitor
+    pthread_cond_destroy(&m->CVP);
+    pthread_cond_destroy(&m->CVC);
+    pthread_mutex_destroy(&m->prod_lock);
+    pthread_mutex_destroy(&m->cons_lock);
+    pthread_mutex_destroy(&m->buffer_data_stored_lock);
+}
+
 void* producer(void * thread_id){
-	printf("P%d: Producing %d values\n",*(int *)thread_id,buffer_size*2);
+	printf("P%d: Producing %d values\n",*(int *)thread_id, buffer_size*2);
 	
-	for(int i = 0; i < buffer_size*2; i++){
+	for(int i = 0; i < buffer_size * 2; i++){
 		
         // Lock critical section
 		pthread_mutex_lock(&m.prod_lock);
 
         // If the buffer is full wait on the condition variable
 		while(m.buffer_data_stored >= buffer_size){
-            printf("Prod Data stored: %d\n", m.buffer_data_stored);
             printf("P%d: Blocked due to full buffer\n", *(int *)thread_id);
             pthread_cond_wait(&m.CVP, &m.prod_lock);
             printf("P%d: Done waiting on full buffer\n", *(int *)thread_id);
 		}
 
 	    // Write random number 0-10 to buffer	
-		m.buffer[m.producer_location] = rand() % (11);
+		m.buffer[m.producer_location] = rand() % 11;
 		printf("P%d: Writing %d to position %d\n", *(int *)thread_id, m.buffer[m.producer_location], m.producer_location);
 
         // Set new buffer position for producers
@@ -57,12 +66,11 @@ void* producer(void * thread_id){
 	}
 	
 	printf("P%d: Exiting\n",*(int *)thread_id);
-	exit(0);
+    return NULL;
 }
 
 
 void * consumer(void * thread_id){
-	printf("C%d: Consuming %d values\n",*(int *)thread_id, buffer_size*2);
 
     // Calculate the total number of items the thread has to consume
     int total_items = num_producers * buffer_size * 2;
@@ -77,17 +85,16 @@ void * consumer(void * thread_id){
     else
        items = total_items / num_consumers; 
 	
+    printf("C%d: Consuming %d values\n",*(int *)thread_id, items);
+
 	for(int i = 0; i < items; i++){
-		
-		printf("C%d: Consuming %d values\n", *(int *)thread_id, items - i);
 		
 	    // Lock critical section	
 		pthread_mutex_lock(&m.cons_lock);
 
         // If buffer is empty wait on the condition variable
 		while(m.buffer_data_stored == 0){
-            printf("Cons Data stored: %d\n", m.buffer_data_stored);
-			printf("C%d: Blocked due to full buffer\n",*(int *)thread_id);
+			printf("C%d: Blocked due to empty buffer\n",*(int *)thread_id);
 			pthread_cond_wait(&m.CVC, &m.cons_lock);
 			printf("C%d: Done waiting on empty buffer\n",*(int *)thread_id);
 		}
@@ -103,17 +110,16 @@ void * consumer(void * thread_id){
 		m.buffer_data_stored -= 1;
 		pthread_mutex_unlock(&m.buffer_data_stored_lock);
 
-
         // Unlock critical section
 		pthread_mutex_unlock(&m.cons_lock);
 
         // Signal to producers that data has been consumed
-		pthread_cond_signal(&m.CVP);
+        pthread_cond_signal(&m.CVP);
 		
 	}
 	
 	printf("C%d: Exiting\n",*(int *)thread_id);
 	
-	exit(0);
+    return NULL;
 	
 }

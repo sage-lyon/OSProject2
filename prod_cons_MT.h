@@ -16,6 +16,8 @@ typedef struct _monitor {
 
 void monitor_init(monitor *m, int *buffer);
 
+void monitor_destroy(monitor *m);
+
 void *producer(void *thread_id);
 
 void *consumer(void *thread_id);
