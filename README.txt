@@ -18,14 +18,13 @@ This zip contains 4 files.
 --> This is used to compile the assignment via the "make" command.
 
 2. The second is prod_cons_MT.h
---> This is the header file for the project and contains the structure declaration for the monitor, as well as the declarations of other functions.
+--> This is the header file for the project and contains the structure declaration for the monitor, as well as the declarations of the functions that are defined in the prod_cons_MT.c file.
 
 3. The third file is prod_cons_MT.c
 --> This file contains the definitions for the functions, consumer and producer, that the threads are initialized to from the main.c file. 
     It also contains the function definitions for the monitor_destroy function, and the monitor_init function to initialize the monitor struct.
 
 4. The fourth file is main.c
---> This file contains the main() function call, and is responsible for taking user inputs from the console, and then creating the resulting monitor, and 
-    threads required.
+--> This file contains the main() function call, and is responsible for taking user inputs from the console, and then creating the resulting monitor, and handling the child threads.
 
 
